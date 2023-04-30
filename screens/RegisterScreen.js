@@ -8,7 +8,6 @@ const RegisterScreen = ({ navigation }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
 
   const register = () => {
     createUserWithEmailAndPassword(auth, email, password)
@@ -16,7 +15,6 @@ const RegisterScreen = ({ navigation }) => {
         const user = userCredential.user;
         updateProfile(user, {
           displayName: name,
-          photoURL: imageUrl || "placeholder",
         });
       })
       .catch((error) => alert(error));
@@ -46,13 +44,6 @@ const RegisterScreen = ({ navigation }) => {
           type="password"
           value={password}
           onChangeText={(text) => setPassword(text)}
-        />
-        <Input
-          placeholder="Pic (optional)"
-          type="text"
-          value={imageUrl}
-          onChangeText={(text) => setImageUrl(text)}
-          onSubmitEditing={register}
         />
       </View>
       <Button

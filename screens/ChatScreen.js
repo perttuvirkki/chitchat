@@ -12,22 +12,32 @@ import {
 import { StatusBar } from "expo-status-bar";
 import React, { useLayoutEffect, useState } from "react";
 import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
-import { Avatar, ListItem } from "@rneui/base";
+import { Avatar } from "@rneui/base";
 import { db, auth } from "../firebase";
 import {
   collection,
-  doc,
   addDoc,
   query,
   serverTimestamp,
   orderBy,
   onSnapshot,
+  where,
+  getDocs,
 } from "firebase/firestore";
-import { currentUser } from "firebase/auth";
+import { SvgXml } from "react-native-svg";
+import CryptoJS from "crypto-js";
 
 const ChatScreen = ({ navigation, route }) => {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
+  const [users, setUsers] = useState([]);
+
+  const fetchAvatarXml = async (hash) => {
+    const baseUrl = "https://api.multiavatar.com";
+    const response = await fetch(`${baseUrl}/${hash}`);
+    const data = await response.text();
+    return data;
+  };
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -51,7 +61,7 @@ const ChatScreen = ({ navigation, route }) => {
       headerLeft: () => (
         <TouchableOpacity
           style={{ marginLeft: 10 }}
-          onPress={navigation.goBack}
+          onPress={() => navigation.navigate("Home")}
         >
           <AntDesign name="arrowleft" size={24} color="white" />
         </TouchableOpacity>
@@ -85,12 +95,47 @@ const ChatScreen = ({ navigation, route }) => {
       route.params.id,
       "messages"
     );
+
+    const userDocQuery = query(
+      collection(db, "chats", route.params.id, "users"),
+      where("email", "==", auth.currentUser.email)
+    );
+
+    const userDocSnapshot = await getDocs(userDocQuery);
+
+    let userNumber;
+    if (!userDocSnapshot.empty) {
+      // User already has a number assigned, retrieve it from their document
+      const userDoc = userDocSnapshot.docs[0];
+      userNumber = userDoc.data().userNumber;
+    } else {
+      // Assign a new number to the user
+      const userNumberQuery = query(
+        collection(db, "chats", route.params.id, "users")
+      );
+      const userNumberSnapshot = await getDocs(userNumberQuery);
+      userNumber = userNumberSnapshot.size + 1;
+      let randomHash = CryptoJS.SHA256("" + Math.random())
+        .toString()
+        .substring(0, 20);
+
+      const svgUrl = await fetchAvatarXml(randomHash);
+
+      // Add the new user to the users collection with the assigned number
+      await addDoc(collection(db, "chats", route.params.id, "users"), {
+        email: auth.currentUser.email,
+        userNumber,
+        userSVG: svgUrl,
+      });
+    }
+
     await addDoc(messagesCollectionRef, {
       createdAt: serverTimestamp(),
       message: input,
       displayName: auth.currentUser.displayName,
       email: auth.currentUser.email,
       photoURL: auth.currentUser.photoURL,
+      userNumber: userNumber,
     });
 
     setInput("");
@@ -116,6 +161,25 @@ const ChatScreen = ({ navigation, route }) => {
     return unsubscribe;
   }, [route]);
 
+  useLayoutEffect(() => {
+    const usersCollectionRef = collection(
+      db,
+      "chats",
+      route.params.id,
+      "users"
+    );
+    const q = query(usersCollectionRef);
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setUsers(
+        snapshot.docs.map((doc) => ({
+          id: doc.id,
+          data: doc.data(),
+        }))
+      );
+    });
+    return unsubscribe;
+  }, [route]);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
       <StatusBar style="light" />
@@ -125,49 +189,38 @@ const ChatScreen = ({ navigation, route }) => {
         keyboardVerticalOffset={90}
       >
         <>
-          <ScrollView contentContainerStyle={{ paddingTop: 10 }}>
-            {messages?.map(({ id, data }) =>
-              data?.email === auth?.currentUser?.email ? (
+          <ScrollView
+            contentContainerStyle={{ paddingTop: 10, paddingBottom: 100 }}
+          >
+            {messages?.map(({ id, data }) => {
+              let userAvatar = users.find(
+                (user) => user.data.email === data.email
+              );
+              if (!userAvatar) {
+                return null;
+              }
+              return data?.email === auth?.currentUser?.email ? (
                 <View style={styles.sender} key={id}>
-                  <Avatar
-                    rounded
-                    position="absolute"
-                    bottom={-10}
-                    right={-5}
-                    size={24}
-                    source={{ uri: data.photoURL }}
-                    containerStyle={{
-                      position: "absolute",
-                      bottom: -10,
-                      right: -5,
-                    }}
-                  />
                   <Text style={styles.senderText}>{data.message}</Text>
+                  <View style={styles.avatarLeft}>
+                    <SvgXml xml={userAvatar?.data?.userSVG} />
+                    <Text>{userAvatar?.data?.userNumber}</Text>
+                  </View>
                 </View>
               ) : (
-                <View style={styles.reciever} key={id}>
-                  <Avatar
-                    rounded
-                    position="absolute"
-                    bottom={-15}
-                    left={-5}
-                    size={24}
-                    source={{ uri: data.photoURL }}
-                    containerStyle={{
-                      position: "absolute",
-                      bottom: -15,
-                      left: -5,
-                    }}
-                  />
-                  <Text style={styles.recieverText}>{data.message}</Text>
-                  <Text style={styles.recieverName}>{data.displayName}</Text>
+                <View style={styles.receiver} key={id}>
+                  <Text style={styles.receiverText}>{data.message}</Text>
+                  <View style={styles.avatarRight}>
+                    <SvgXml xml={userAvatar?.data?.userSVG} />
+                    <Text>{userAvatar?.data?.userNumber}</Text>
+                  </View>
                 </View>
-              )
-            )}
+              );
+            })}
           </ScrollView>
           <View style={styles.footer}>
             <TextInput
-              placeholder="Signal Message"
+              placeholder="Say something nice"
               style={styles.textInput}
               value={input}
               onChangeText={(text) => setInput(text)}
@@ -197,29 +250,33 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  reciever: {
+  avatarRight: {
+    position: "absolute",
+    top: 0,
+    right: -50,
+    alignItems: "center",
+    justifyContent: "flex-end",
+    width: 40,
+    height: 80,
+    borderRadius: 20,
+    backgroundColor: "#eee",
+  },
+  receiver: {
     padding: 10,
     paddingRight: 20,
     backgroundColor: "#2B68E6",
-    alignSelf: "flex-start",
     borderRadius: 20,
     marginLeft: 15,
-    maxWidth: "80%",
-    position: "relative",
+    width: "80%",
     marginBottom: 15,
-    flex: 1,
   },
-  recieverName: {
-    left: 5,
-    paddingTop: 8,
-    fontSize: 10,
-    color: "white",
-    fontWeight: "500",
-  },
-  recieverText: {
+
+  receiverText: {
     left: 5,
     color: "white",
     fontWeight: "500",
+    paddingTop: 40,
+    paddingBottom: 40,
   },
   sender: {
     padding: 15,
@@ -228,12 +285,25 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: 15,
     marginBottom: 10,
-    maxWidth: "80%",
+    width: "80%",
     position: "relative",
+  },
+  avatarLeft: {
+    position: "absolute",
+    top: 0,
+    left: -50,
+    alignItems: "center",
+    justifyContent: "flex-end",
+    width: 40,
+    height: 80,
+    borderRadius: 20,
+    backgroundColor: "#eee",
   },
   senderText: {
     color: "black",
     fontWeight: "500",
+    paddingTop: 40,
+    paddingBottom: 40,
   },
   footer: {
     flexDirection: "row",

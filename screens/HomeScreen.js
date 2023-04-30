@@ -1,4 +1,10 @@
-import { StyleSheet, View, ScrollView, TouchableOpacity } from "react-native";
+import {
+  StyleSheet,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  Text,
+} from "react-native";
 import React, {
   useLayoutEffect,
   useState,
@@ -9,7 +15,7 @@ import CustomListItem from "../components/CustomListItem";
 import { auth, db } from "../firebase";
 import { Button, Image, Input } from "@rneui/themed";
 import { AntDesign, SimpleLineIcons } from "@expo/vector-icons";
-import { getDocs, collection } from "firebase/firestore";
+import { getDocs, collection, orderBy, query } from "firebase/firestore";
 import { useFocusEffect } from "@react-navigation/native";
 
 const HomeScreen = ({ navigation }) => {
@@ -20,7 +26,11 @@ const HomeScreen = ({ navigation }) => {
       title: "chitchat",
       headerLeft: () => (
         <View style={{ marginLeft: 20 }}>
-          <Button title="logout" onPress={logOut} />
+          <SimpleLineIcons
+            name="logout"
+            onPress={logOut}
+            size={24}
+          ></SimpleLineIcons>
         </View>
       ),
       headerRight: () => (
@@ -52,14 +62,18 @@ const HomeScreen = ({ navigation }) => {
     });
   };
 
-  const enterChat = (id, chatName, chatImage) => {
-    navigation.navigate("Chat", { id, chatName, chatImage });
+  const enterChat = (id, chatName) => {
+    navigation.navigate("Chat", { id, chatName });
   };
 
   useFocusEffect(
     useCallback(() => {
       const getChats = async () => {
-        const querySnapshot = await getDocs(collection(db, "chats"));
+        const chatsCollectionRef = collection(db, "chats");
+
+        const querySnapshot = await getDocs(
+          query(chatsCollectionRef, orderBy("createdAt", "desc"))
+        );
         const newChats = [];
         querySnapshot.forEach((doc) => {
           newChats.push({ id: doc.id, data: doc.data() });
@@ -71,22 +85,57 @@ const HomeScreen = ({ navigation }) => {
   );
 
   return (
-    <View>
+    <View style={styles.container}>
       <ScrollView>
-        {chats?.map(({ id, data: { chatName, chatImage } }) => (
+        {chats?.map(({ id, data: { chatName } }) => (
           <CustomListItem
             key={id}
             id={id}
             chatName={chatName}
             enterChat={enterChat}
-            chatImage={chatImage}
           />
         ))}
       </ScrollView>
+      <TouchableOpacity activeOpacity={0.5} style={styles.addchat}>
+        <SimpleLineIcons
+          onPress={() => navigation.navigate("AddChat")}
+          name="plus"
+          size={58}
+        ></SimpleLineIcons>
+      </TouchableOpacity>
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>chitchat - Version 1.0.0</Text>
+        <Text style={styles.footerText}>© 2023 Pepetec</Text>
+      </View>
     </View>
   );
 };
 
 export default HomeScreen;
 
-const styles = StyleSheet.create({ container: {} });
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  addchat: {
+    position: "absolute",
+    bottom: 40,
+    right: 40,
+    backgroundColor: "white",
+    borderRadius: 30,
+    width: 60,
+    height: 60,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+  },
+  footer: {
+    backgroundColor: "#f8f8f8",
+    borderTopWidth: 1,
+    borderTopColor: "#e7e7e7",
+    padding: 15,
+    alignItems: "center",
+  },
+  footerText: {
+    fontSize: 14,
+    color: "#7a7a7a",
+  },
+});
