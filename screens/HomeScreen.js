@@ -8,18 +8,26 @@ import {
 import React, {
   useLayoutEffect,
   useState,
-  useEffect,
   useCallback,
+  useEffect,
 } from "react";
 import CustomListItem from "../components/CustomListItem";
 import { auth, db } from "../firebase";
-import { Button, Image, Input } from "@rneui/themed";
 import { AntDesign, SimpleLineIcons } from "@expo/vector-icons";
 import { getDocs, collection, orderBy, query } from "firebase/firestore";
 import { useFocusEffect } from "@react-navigation/native";
 
 const HomeScreen = ({ navigation }) => {
   const [chats, setChats] = useState([]);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (!user) {
+        navigation.replace("Login");
+      }
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -38,18 +46,11 @@ const HomeScreen = ({ navigation }) => {
           style={{
             flexDirection: "row",
             justifyContent: "space-between",
-            width: 80,
-            marginRight: 20,
+            width: 50,
           }}
         >
           <TouchableOpacity activeOpacity={0.5}>
             <AntDesign name="camerao" size={24}></AntDesign>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => navigation.navigate("AddChat")}
-            activeOpacity={0.5}
-          >
-            <SimpleLineIcons name="pencil" size={24}></SimpleLineIcons>
           </TouchableOpacity>
         </View>
       ),
@@ -126,6 +127,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     zIndex: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   footer: {
     backgroundColor: "#f8f8f8",

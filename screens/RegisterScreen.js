@@ -4,7 +4,7 @@ import { Button, Input, Text } from "@rneui/themed";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "../firebase";
 
-const RegisterScreen = ({ navigation }) => {
+const RegisterScreen = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,7 +23,7 @@ const RegisterScreen = ({ navigation }) => {
   return (
     <KeyboardAvoidingView behavior="padding" style={styles.container}>
       <Text h3 style={{ marginBottom: 50 }}>
-        RegisterScreen
+        Sign up!
       </Text>
       <View style={styles.inputContainer}>
         <Input
@@ -42,6 +42,7 @@ const RegisterScreen = ({ navigation }) => {
         <Input
           placeholder="Password"
           type="password"
+          secureTextEntry={true}
           value={password}
           onChangeText={(text) => setPassword(text)}
         />

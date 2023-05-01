@@ -1,6 +1,6 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, TextInput } from "react-native";
 import React, { useLayoutEffect, useState, useEffect } from "react";
-import { Button, Input } from "@rneui/themed";
+import { Button } from "@rneui/themed";
 import { db, auth } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import CryptoJS from "crypto-js";
@@ -66,7 +66,7 @@ const AddChatScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Input
+      <TextInput
         style={styles.input}
         placeholder="Whats on your mind?"
         value={input}
@@ -75,7 +75,11 @@ const AddChatScreen = ({ navigation }) => {
         onSubmitEditing={createChat}
       />
       <Text style={styles.counter}>{input.length}/100</Text>
-      <Button title="Create chat" onPress={createChat} />
+      <Button
+        title="Start a discussion"
+        onPress={createChat}
+        disabled={input.length < 10}
+      />
     </View>
   );
 };
@@ -88,18 +92,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   input: {
-    height: 100,
+    height: 150,
     borderColor: "gray",
-    backgroundColor: "yellow",
-    borderBottomWidth: 0,
-    borderWidth: 2,
-    borderRadius: 5,
-    flex: 1,
-    paddingHorizontal: 10,
+    backgroundColor: "#ffffff",
+    borderRadius: 15,
+    paddingVertical: 20,
+    paddingHorizontal: 15,
+    margin: 10,
+    width: "90%",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   counter: {
     fontSize: 12,
     color: "gray",
-    marginLeft: 10,
+    margin: 10,
   },
 });

@@ -1,9 +1,10 @@
 import { KeyboardAvoidingView, StyleSheet, Text, View } from "react-native";
 import { React, useEffect, useState } from "react";
-import { Button, Image, Input } from "@rneui/themed";
+import { Button, Image, Input, Avatar } from "@rneui/themed";
 import { StatusBar } from "expo-status-bar";
 import { auth } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import loginImage from "../assets/login.png";
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -14,7 +15,7 @@ const LoginScreen = ({ navigation }) => {
       if (authUser) {
         navigation.replace("Home");
       }
-    });
+    }, []);
 
     return unsubscribe;
   }, []);
@@ -28,7 +29,11 @@ const LoginScreen = ({ navigation }) => {
   return (
     <KeyboardAvoidingView behavior="padding" style={styles.container}>
       <StatusBar style="light" />
-      <Text>LoginScreen</Text>
+      <Avatar size={150} source={loginImage} containerStyle={{ padding: 15 }} />
+      <Text>welcome to chitchat</Text>
+      <Text>remember to behave!</Text>
+      <View style={{ height: 50 }} />
+
       <View style={styles.inputContainer}>
         <Input
           placeholder="Email"
@@ -52,9 +57,12 @@ const LoginScreen = ({ navigation }) => {
         containerStyle={styles.button}
         onPress={() => navigation.navigate("Register")}
         type="outline"
-        title="Register"
+        title="Sign up"
       />
-      <View style={{ height: 100 }} />
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>chitchat - Version 1.0.0</Text>
+        <Text style={styles.footerText}>© 2023 Pepetec</Text>
+      </View>
     </KeyboardAvoidingView>
   );
 };
@@ -66,8 +74,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 10,
-    backgroundColor: "white",
+    backgroundColor: "#EFEAD8",
   },
   inputContainer: { width: 300 },
   button: { width: 200, marginTop: 10 },
+  footer: {
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+    backgroundColor: "#f8f8f8",
+    borderTopWidth: 1,
+    borderTopColor: "#e7e7e7",
+    paddingTop: 15,
+    paddingBottom: 15,
+    alignItems: "center",
+  },
+  footerText: {
+    fontSize: 14,
+    color: "#7a7a7a",
+  },
 });

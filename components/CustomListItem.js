@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
   },
   content: {
-    flex: 1, // Add this to make the content take the remaining available space
+    flex: 1,
   },
   title: {
     fontWeight: "800",
