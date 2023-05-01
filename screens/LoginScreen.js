@@ -1,6 +1,6 @@
 import { KeyboardAvoidingView, StyleSheet, Text, View } from "react-native";
 import { React, useEffect, useState } from "react";
-import { Button, Image, Input, Avatar } from "@rneui/themed";
+import { Button, Input, Avatar } from "@rneui/themed";
 import { StatusBar } from "expo-status-bar";
 import { auth } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
