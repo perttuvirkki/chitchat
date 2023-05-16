@@ -134,7 +134,6 @@ const ChatScreen = ({ navigation, route }) => {
       message: input,
       displayName: auth.currentUser.displayName,
       email: auth.currentUser.email,
-      photoURL: auth.currentUser.photoURL,
       userNumber: userNumber,
     });
 
@@ -215,7 +214,11 @@ const ChatScreen = ({ navigation, route }) => {
                 <View style={styles.receiver} key={id}>
                   <Text style={styles.receiverText}>{data.message}</Text>
                   <View style={styles.avatarLeft}>
-                    <SvgXml xml={userAvatar?.data?.userSVG} />
+                    <SvgXml
+                      xml={userAvatar?.data?.userSVG}
+                      width={40}
+                      height={40}
+                    />
                     <Text>{userAvatar?.data?.userNumber}</Text>
                   </View>
                 </View>
@@ -297,10 +300,10 @@ const styles = StyleSheet.create({
     top: 0,
     left: -50,
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "center",
     width: 40,
-    height: 80,
-    borderRadius: 20,
+    height: 60,
+    borderRadius: 25,
     backgroundColor: "#eee",
   },
   receiverText: {

@@ -11,9 +11,7 @@ const CustomListItem = ({ id, chatName, enterChat }) => {
     >
       <Avatar />
       <View style={styles.content}>
-        <Text style={styles.title} ellipsizeMode="tail">
-          {chatName}
-        </Text>
+        <Text style={styles.title}>{chatName}</Text>
       </View>
     </TouchableOpacity>
   );
