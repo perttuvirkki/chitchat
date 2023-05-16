@@ -79,7 +79,7 @@ const ChatScreen = ({ navigation, route }) => {
             <FontAwesome name="video-camera" size={24} color="white" />
           </TouchableOpacity>
           <TouchableOpacity>
-            <Ionicons name="call" size={24} color="white" />
+            <Ionicons name="camera" size={24} color="white" />
           </TouchableOpacity>
         </View>
       ),
@@ -202,15 +202,19 @@ const ChatScreen = ({ navigation, route }) => {
               return data?.email === auth?.currentUser?.email ? (
                 <View style={styles.sender} key={id}>
                   <Text style={styles.senderText}>{data.message}</Text>
-                  <View style={styles.avatarLeft}>
-                    <SvgXml xml={userAvatar?.data?.userSVG} />
+                  <View style={styles.avatarRight}>
+                    <SvgXml
+                      xml={userAvatar?.data?.userSVG}
+                      width={40}
+                      height={40}
+                    />
                     <Text>{userAvatar?.data?.userNumber}</Text>
                   </View>
                 </View>
               ) : (
                 <View style={styles.receiver} key={id}>
                   <Text style={styles.receiverText}>{data.message}</Text>
-                  <View style={styles.avatarRight}>
+                  <View style={styles.avatarLeft}>
                     <SvgXml xml={userAvatar?.data?.userSVG} />
                     <Text>{userAvatar?.data?.userNumber}</Text>
                   </View>
@@ -255,13 +259,13 @@ const styles = StyleSheet.create({
     top: 0,
     right: -50,
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "center",
     width: 40,
-    height: 80,
-    borderRadius: 20,
+    height: 60,
+    borderRadius: 25,
     backgroundColor: "#eee",
   },
-  receiver: {
+  sender: {
     padding: 10,
     paddingRight: 20,
     backgroundColor: "#2B68E6",
@@ -271,14 +275,14 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
 
-  receiverText: {
+  senderText: {
     left: 5,
     color: "white",
     fontWeight: "500",
     paddingTop: 40,
     paddingBottom: 40,
   },
-  sender: {
+  receiver: {
     padding: 15,
     backgroundColor: "#ECECEC",
     alignSelf: "flex-end",
@@ -299,7 +303,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "#eee",
   },
-  senderText: {
+  receiverText: {
     color: "black",
     fontWeight: "500",
     paddingTop: 40,
